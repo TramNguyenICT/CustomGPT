@@ -32,16 +32,21 @@ def ask_gpt():
         user_message = data['message']
 
         # Call the OpenAI GPT API (using the correct method for chat models)
-        # Use the traditional completions API method
-        response = openai.Completion.create(  # Using Completion.create for traditional models
-            model="gpt-3.5-turbo",  # You can change this model as needed
-            prompt=user_message,  # Directly passing the user message as the prompt
+        response = client.chat.completions.create(
+            messages=[
+                 {
+                    "role": "user",
+                 "content": "Say this is a test",
+                 }
+            ],
+            model="gpt-4o",
             max_tokens=150,  # Adjust the token limit based on your needs
             temperature=0.7  # Adjust the creativity of the responses
         )
 
+
         # Get the response content from OpenAI API
-        reply = response['choices'][0]['text'].strip()  # Using 'text' for the traditional API response
+        reply = response.choices[0].message.content
         return jsonify({"reply": reply})
 
     except Exception as e:
