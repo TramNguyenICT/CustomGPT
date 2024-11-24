@@ -4,6 +4,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import os
 import openai
+
 # Load environment variables
 load_dotenv()
 
@@ -30,18 +31,17 @@ def ask_gpt():
 
         user_message = data['message']
 
-        # Call the OpenAI GPT API
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo-instruct",  # You can change this model if needed
-            messages=[
-                {"role": "system", "content": "You are a Sustainability Helper GPT specialized in FIGBC."},
-                {"role": "user", "content": user_message}
-            ],
+        # Call the OpenAI GPT API (using the correct method for chat models)
+        # Use the traditional completions API method
+        response = openai.Completion.create(  # Using Completion.create for traditional models
+            model="gpt-3.5-turbo",  # You can change this model as needed
+            prompt=user_message,  # Directly passing the user message as the prompt
             max_tokens=150,  # Adjust the token limit based on your needs
             temperature=0.7  # Adjust the creativity of the responses
         )
+
         # Get the response content from OpenAI API
-        reply = response.choices[0].message.content  # Accessing Pydantic model attributes
+        reply = response['choices'][0]['text'].strip()  # Using 'text' for the traditional API response
         return jsonify({"reply": reply})
 
     except Exception as e:
@@ -51,11 +51,11 @@ def ask_gpt():
 @app.route('/list-models', methods=['GET'])
 def list_models():
     try:
-        # Retrieve the list of available models
-        models = client.models.list()
+        # Retrieve the list of available models (use openai.Model.list())
+        models = openai.Model.list()  # Changed to openai.Model.list()
 
         # Extract model names from the response and return them as a list
-        model_names = [model.id for model in models.data]
+        model_names = [model.id for model in models['data']]  # Corrected how data is accessed
         return jsonify({"available_models": model_names})
 
     except openai.error.OpenAIError as e:
